@@ -67,11 +67,5 @@ NOTE: TODO faire ca dans la partie deployment
 After the creation, you need to update the psql database using the following command
 
 ```shell
-oc project backstage
-
-oc rsh postgres-78b8db49c9-k9trn #pod to update
-
-psql
-
-ALTER USER pg WITH CREATEDB;
+oc rsh -n backstage $(oc get pods -n backstage -l app=postgres -o name) /usr/bin/psql -c 'ALTER USER pg WITH CREATEDB;'
 ```
