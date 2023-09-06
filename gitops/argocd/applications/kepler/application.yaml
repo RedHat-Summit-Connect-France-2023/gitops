@@ -7,7 +7,7 @@ spec:
   project: backstage
   source:
     repoURL: https://github.com/Janus-france-ssa/janus-gitops.git
-    targetRevision: slallemand/openshift-authent
+    targetRevision: main
     path: gitops/kepler/base
   destination:
     server: https://kubernetes.default.svc
