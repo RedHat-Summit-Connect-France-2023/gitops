@@ -8,6 +8,10 @@ See [INFRASTRUCTURE.md](doc/INFRASTRUCTURE.md).
 
 * Install the OpenShift GitOps operator.
 
+```yaml
+oc apply -f gitops/pre-requisites
+```
+
 * Fix the ArgoCD ingress route in order to use the router default TLS certificate.
 
 ```sh
@@ -25,8 +29,8 @@ oc get route -n openshift-gitops openshift-gitops-server -o jsonpath='https://{.
   * Payload URL: *url above*
   * Content-Type: Application/json
 
-* Give cluster-admin access rights to the **OpenShift Gitops** operator.
+* Deploy the ArgoCD Registry operator
 
 ```sh
-oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:openshift-gitops:openshift-gitops-argocd-application-controller
+oc apply -f gitops/argocd/registry/registry.yaml
 ```
