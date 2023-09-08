@@ -145,3 +145,33 @@ users:
 EOF
 oc adm policy add-cluster-role-to-group cluster-admin demo-admins
 ```
+
+**Let's Encrypt**
+
+```sh
+# kubeconfig can be downloaded from the Assisted Installer console
+export KUBECONFIG=/home/nmasse/tmp/summit-connect-2023/cluster/auth/kubeconfig
+
+# Cluster DNS domain
+export DOMAIN=summitconnect.REDACTED.opentlc.com
+
+# Get a valid certificate
+sudo dnf install -y golang-github-acme-lego
+lego -d "api.$DOMAIN$" -d "*.apps.$DOMAIN" -a -m nmasse@redhat.com --dns route53 run
+
+# Install it on the router
+cert_dn="$(openssl x509 -noout -subject -in .lego/certificates/api.$DOMAIN.crt)"
+cert_cn="${cert_dn#subject=CN = }"
+kubectl create secret tls router-certs-$(date "+%Y-%m-%d") --cert=".lego/certificates/api.$DOMAIN.crt" --key=".lego/certificates/api.$DOMAIN.key" -n openshift-ingress --dry-run -o yaml > router-certs.yaml
+kubectl apply -f "router-certs.yaml" -n openshift-ingress
+kubectl patch ingresscontroller default -n openshift-ingress-operator --type=merge --patch-file=/dev/fd/0 <<EOF
+{"spec": { "defaultCertificate": { "name": "router-certs-$(date "+%Y-%m-%d")" }}}  
+EOF
+
+# Install it on the api-server
+kubectl create secret tls api-certs-$(date "+%Y-%m-%d") --cert=".lego/certificates/api.$DOMAIN.crt" --key=".lego/certificates/api.$DOMAIN.key" -n openshift-config --dry-run -o yaml > "api-certs.yaml"
+kubectl apply -f "api-certs.yaml" -n openshift-config
+kubectl patch apiserver cluster --type=merge --patch-file=/dev/fd/0 <<EOF
+{"spec":{"servingCerts":{"namedCertificates":[{"names":["$cert_cn"],"servingCertificate":{"name": "api-certs-$(date "+%Y-%m-%d")"}}]}}}
+EOF
+```
