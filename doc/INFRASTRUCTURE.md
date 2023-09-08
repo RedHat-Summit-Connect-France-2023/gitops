@@ -100,9 +100,9 @@ ip-10-0-204-250.eu-west-3.compute.internal   8     32037804Ki
 
 **Configuration de l'authentification Google**
 
-Il faut ajouter l'URL `https://oauth-openshift.apps.summitconnect.REDACTED.opentlc.com/oauth2callback/RedHatSSO` au [projet Google](https://console.cloud.google.com/apis/credentials).
+Il faut ajouter l'URL `https://oauth-openshift.apps.summitconnect.REDACTED.opentlc.com/oauth2callback/RedHatSSO` au [projet Google](https://console.cloud.google.com/apis/credentials). Cf. [Secure your OpenShift 4 cluster with OpenID Connect authentication](https://www.itix.fr/blog/secure-openshift-4-openid-connect-authentication/).
 
-```
+```sh
 export GOOGLE_CLIENT_SECRET=REDACTED
 export GOOGLE_CLIENT_ID=REDACTED
 export KUBECONFIG=/home/nmasse/tmp/summit-connect-2023/cluster/auth/kubeconfig
