@@ -213,14 +213,14 @@ spec:
       requests:
         cpu: 250m
         memory: 256Mi
-  # resourceExclusions: |
-  #   - apiGroups:
-  #     - tekton.dev
-  #     clusters:
-  #     - '*'
-  #     kinds:
-  #     - TaskRun
-  #     - PipelineRun
+  resourceExclusions: |
+    - apiGroups:
+      - tekton.dev
+      clusters:
+      - '*'
+      kinds:
+      - TaskRun
+      - PipelineRun
   server:
     autoscale:
       enabled: false
