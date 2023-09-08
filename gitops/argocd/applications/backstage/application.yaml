@@ -6,8 +6,8 @@ metadata:
 spec:
   project: backstage
   source:
-    repoURL: https://github.com/Janus-france-ssa/janus-gitops.git
-    targetRevision: master
+    repoURL: https://github.com/RedHat-Summit-Connect-France-2023/gitops.git
+    targetRevision: main
     path: gitops/backstage/overlays/prod
   destination:
     server: https://kubernetes.default.svc

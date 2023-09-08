@@ -1,0 +1,154 @@
+app:
+  baseUrl: https://backstage-route-backstage.apps.summitconnect.sandbox2218.opentlc.com
+
+organization:
+  name: "Red Hat Developer Hub"
+
+argocd:
+  baseUrl: https://argocd-server-janus-argocd.apps.summitconnect.sandbox2218.opentlc.com
+  appLocatorMethods:
+    - instances:
+        - name: main
+          token: ${ARGO_API_TOKEN}
+          url: https://argocd-server-janus-argocd.apps.summitconnect.sandbox2218.opentlc.com
+      type: config
+  waitCycles: 25
+
+auth:
+  providers:
+    oauth2Proxy:
+  
+    github:
+      development:
+        clientId: ${GH_CLIENT_ID}
+        clientSecret: ${GH_CLIENT_SECRET}
+
+
+backend:
+  baseUrl: https://backstage-route-backstage.apps.summitconnect.sandbox2218.opentlc.com
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  cors:
+    origin: https://backstage-route-backstage.apps.summitconnect.sandbox2218.opentlc.com
+    methods: [GET, POST, PUT, DELETE]
+    credentials: true
+  database:
+    client: pg
+    connection:
+      host: postgres-service.backstage.svc.cluster.local
+      port: 5432
+      user: pg
+      password: redhat
+
+proxy:
+  '/argocd/api':
+    # url to the api of your hosted argoCD instance
+    target: https://openshift-gitops-server-openshift-gitops.apps.summitconnect.sandbox2218.opentlc.com/api/v1/
+    changeOrigin: true
+    # this line is required if your hosted argoCD instance has self-signed certificate
+    secure: false
+    headers:
+      Cookie: ${ARGO_API_TOKEN}
+
+catalog:
+  locations:
+    # - rules:
+    #     - allow:
+    #         - Template
+    #   target: https://github.com/slallemand/software-templates/blob/main/scaffolder-templates/app-template/template.yaml
+    #   type: url
+    # - rules:
+    #     - allow:
+    #         - Template
+    #   target: https://github.com/slallemand/software-templates/blob/main/scaffolder-templates/argocd-template/template.yaml
+    #   type: url
+    # - rules:
+    #     - allow:
+    #         - Template
+    #   target: https://github.com/slallemand/software-templates/blob/main/scaffolder-templates/quarkus-backend-template/template.yaml
+    #   type: url
+    # - rules:
+    #     - allow:
+    #         - Template
+    #   target: https://github.com/slallemand/software-templates/blob/main/scaffolder-templates/quarkus-tekton-gitops-template/template.yaml
+    #   type: url
+    - rules:
+        - allow:
+            - Template
+      target: https://github.com/slallemand/software-templates-redhat-gpte/blob/main/scaffolder-templates/quarkus-web-template/template.yaml
+      type: url
+    - rules:
+        - allow:
+            - Template
+      target: https://github.com/slallemand/ordermanagement-template/blob/main/template.yaml
+      type: url
+    - rules: 
+        - allow:
+            - Template
+      target: https://github.com/RedHat-Summit-Connect-France-2023/software-templates/blob/main/showcase-templates.yaml
+      type: url
+  providers:
+    ocm:
+      operate-first:
+        kubernetesPluginRef: local-cluster
+        name: local
+  rules:
+    - allow:
+        - Component
+        - System
+        - API
+        - Resource
+        - Location
+        - Template
+        - User
+
+enabled:
+  argocd: true
+  github: true
+  githubOrg: false
+  keycloak: false
+  kubernetes: true
+  ocm: true
+  techdocs: true
+
+integrations:
+  github:
+    - host: github.com
+      token: ${GH_TOKEN}
+
+techdocs:
+  publisher:
+    type: "awsS3"
+    awsS3:
+      bucketName: "rhdh-neve"
+      accountId: ${AWS_ID}
+      region: ${AWS_REGION}
+
+aws:
+  accounts:
+    - accountId: ${AWS_ID}
+      accessKeyId: ${AWS_ACCESS_KEY_ID}
+      secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+
+kubernetes:
+  clusterLocatorMethods:
+    - clusters:
+        - authProvider: serviceAccount
+          dashboardApp: openshift
+          dashboardUrl: https://openshift-console-openshift.openshift-console.svc.cluster.local
+          name: local-cluster
+          skipTLSVerify: true
+          url: https://kubernetes.default.svc/
+      type: config
+  customResources:
+    - apiVersion: v1
+      group: route.openshift.io
+      plural: routes
+    - apiVersion: v1beta1
+      group: tekton.dev
+      plural: pipelineruns
+    - apiVersion: v1beta1
+      group: tekton.dev
+      plural: taskruns
+  serviceLocatorMethod:
+    type: multiTenant

@@ -1,0 +1,51 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: backstage
+
+resources:
+- ../../base
+
+configMapGenerator:
+- files:
+  - app-config.yaml
+  name: app-config
+  behavior: replace
+
+patches:    
+- target:
+    kind: Namespace
+    name: backstage
+  patch: |-
+    - op: replace
+      path: /metadata/name
+      value: backstage
+- target: 
+    kind: ServiceAccount
+    name: backstage-sa
+  patch: |-
+    - op: replace
+      path: /metadata/annotations/serviceaccounts.openshift.io~1oauth-redirecturi.backstage
+      value: https://backstage-route-backstage.apps.summitconnect.sandbox2218.opentlc.com/oauth/callback
+- target:
+    kind: SecurityContextConstraints
+    name: backstage-scc
+  patch: |-
+    - op: replace
+      path: /users
+      value: 
+        - system:serviceaccount:backstage:backstage-sa
+- target:  
+    kind: ClusterRoleBinding
+    name: backstage-kubernetes-plugin
+  patch: |-
+    - op: replace
+      path: /subjects/0/namespace
+      value: backstage
+- target:  
+    kind: ClusterRoleBinding
+    name: backstage-ocm-binding
+  patch: |-
+    - op: replace
+      path: /subjects/0/namespace
+      value: backstage

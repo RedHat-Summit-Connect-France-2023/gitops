@@ -6,7 +6,7 @@ metadata:
 spec:
   project: backstage
   source:
-    repoURL: https://github.com/Janus-france-ssa/janus-gitops.git
+    repoURL: https://github.com/RedHat-Summit-Connect-France-2023/gitops.git
     targetRevision: main
     path: gitops/kepler/base
   destination:
