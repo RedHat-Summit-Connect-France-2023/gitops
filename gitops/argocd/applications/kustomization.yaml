@@ -2,3 +2,4 @@ resources:
 - backstage/application.yaml
 - cluster-operators/application.yaml
 - kepler/application.yaml
+- kubevirt/application.yaml
