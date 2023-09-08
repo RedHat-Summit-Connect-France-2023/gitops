@@ -29,8 +29,12 @@ oc get route -n openshift-gitops openshift-gitops-server -o jsonpath='https://{.
   * Payload URL: *url above*
   * Content-Type: Application/json
 
-* Deploy the ArgoCD Registry operator
+* Deploy the ArgoCD Registry application
 
 ```sh
 oc apply -f gitops/argocd/registry/registry.yaml
 ```
+
+## Deploy Red Hat Developer Hub
+
+See [BACKSTAGE.md](doc/BACKSTAGE.md).
