@@ -23,7 +23,6 @@ auth:
         clientId: ${GH_CLIENT_ID}
         clientSecret: ${GH_CLIENT_SECRET}
 
-
 backend:
   baseUrl: https://backstage-route-backstage.apps.summitconnect.sandbox2218.opentlc.com
   csp:
@@ -72,21 +71,22 @@ catalog:
     #         - Template
     #   target: https://github.com/slallemand/software-templates/blob/main/scaffolder-templates/quarkus-tekton-gitops-template/template.yaml
     #   type: url
-    - rules:
-        - allow:
-            - Template
-      target: https://github.com/slallemand/software-templates-redhat-gpte/blob/main/scaffolder-templates/quarkus-web-template/template.yaml
-      type: url
-    - rules:
-        - allow:
-            - Template
-      target: https://github.com/slallemand/ordermanagement-template/blob/main/template.yaml
-      type: url
     - rules: 
         - allow:
             - Template
       target: https://github.com/RedHat-Summit-Connect-France-2023/software-templates/blob/main/showcase-templates.yaml
       type: url
+    - rules:
+        - allow:
+            - Template
+      target: https://github.com/slallemand/software-templates-redhat-gpte/blob/main/scaffolder-templates/quarkus-web-template/template.yaml
+      type: url
+    #- rules:
+    #    - allow:
+    #        - Template
+    #  target: https://github.com/slallemand/ordermanagement-template/blob/main/template.yaml
+    #  type: url
+
   providers:
     ocm:
       operate-first:
@@ -149,6 +149,13 @@ kubernetes:
       plural: pipelineruns
     - apiVersion: v1beta1
       group: tekton.dev
+      plural: pipelines
+    - apiVersion: v1beta1
+      group: tekton.dev
       plural: taskruns
+    - group: 'org.eclipse.che'
+      apiVersion: 'v2'
+      plural: 'checlusters'
+
   serviceLocatorMethod:
     type: multiTenant
