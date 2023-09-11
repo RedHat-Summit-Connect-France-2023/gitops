@@ -8,3 +8,4 @@ resources:
 - ./sub.yaml
 - ./project.yaml
 - ./argocd.yaml
+- ./ClusterTask.yaml
