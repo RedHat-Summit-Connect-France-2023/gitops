@@ -1,0 +1,160 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgresql-cloudinit
+type: Opaque
+stringData:
+  userData: |
+    #cloud-config
+
+    users:
+    - name: admin
+      gecos: French SA Team
+      groups: wheel
+      lock_passwd: false
+      # echo REDACTED | mkpasswd --method=yescrypt -s
+      passwd: $y$j9T$LEafblWZP3V52Cbzt6QLW/$kcwkvEonHMJj0F.JkiDXZTqBakv5OBD/AJZc5Ba5KhC
+      ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFW62WJXI1ZCMfNA4w0dMpL0fsldhbEfULNGIUB0nQui nmasse@redhat.com
+
+    write_files:
+    - path: /etc/sudoers
+      content: |
+        Defaults   !visiblepw
+        Defaults    always_set_home
+        Defaults    match_group_by_gid
+        Defaults    always_query_group_plugin
+        Defaults    env_reset
+        Defaults    env_keep =  "COLORS DISPLAY HOSTNAME HISTSIZE KDEDIR LS_COLORS"
+        Defaults    env_keep += "MAIL QTDIR USERNAME LANG LC_ADDRESS LC_CTYPE"
+        Defaults    env_keep += "LC_COLLATE LC_IDENTIFICATION LC_MEASUREMENT LC_MESSAGES"
+        Defaults    env_keep += "LC_MONETARY LC_NAME LC_NUMERIC LC_PAPER LC_TELEPHONE"
+        Defaults    env_keep += "LC_TIME LC_ALL LANGUAGE LINGUAS _XKB_CHARSET XAUTHORITY"
+        Defaults    secure_path = /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/var/lib/snapd/snap/bin
+        root    ALL=(ALL)       ALL
+        %wheel  ALL=(ALL)       NOPASSWD: ALL
+        #includedir /etc/sudoers.d
+      permissions: '0440'
+      append: false
+
+    - path: /root/bootstrap.sh
+      content: |
+        #!/bin/bash
+        set -Eeuo pipefail
+        PGSETUP_INITDB_OPTIONS=--auth-host=scram-sha-256 postgresql-setup --initdb --unit postgresql
+        sed -i.bak -E "s/^#*\s*listen_addresses\s*=\s*'[^']*'/listen_addresses = '0.0.0.0'/" /var/lib/pgsql/data/postgresql.conf
+        cat >> /var/lib/pgsql/data/pg_hba.conf <<EOF
+        host    all             all             0.0.0.0/0               scram-sha-256
+        EOF
+        systemctl start postgresql.service
+        systemctl enable postgresql.service
+        cd /tmp
+        sudo -u postgres psql -c "CREATE USER connect23 WITH ENCRYPTED PASSWORD 'connect23'"
+        sudo -u postgres psql -c "CREATE DATABASE ordermanagement OWNER 'connect23';"
+      permissions: '0755'
+
+    packages:
+    - postgresql-server
+
+    runcmd:
+    - [ "/root/bootstrap.sh" ]
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+  labels:
+    app: postgresql
+  name: postgresql
+spec:
+  dataVolumeTemplates:
+    - apiVersion: cdi.kubevirt.io/v1beta1
+      kind: DataVolume
+      metadata:
+        creationTimestamp: null
+        name: postgresql
+      spec:
+        source:
+          http:
+            url: https://redhat-summit-connect-france-2023.s3.eu-west-3.amazonaws.com/Fedora-Cloud-Base-38-1.6.x86_64.qcow2
+        pvc:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 6Gi
+  runStrategy: Always
+  template:
+    metadata:
+      annotations:
+        vm.kubevirt.io/flavor: small
+        vm.kubevirt.io/os: fedora
+        vm.kubevirt.io/workload: server
+      creationTimestamp: null
+      labels:
+        kubevirt.io/domain: postgresql
+        kubevirt.io/size: small
+    spec:
+      domain:
+        cpu:
+          cores: 2
+          sockets: 1
+          threads: 1
+        devices:
+          disks:
+            - disk:
+                bus: virtio
+              name: rootdisk
+            - disk:
+                bus: virtio
+              name: cloudinitdisk
+          interfaces:
+            - macAddress: '02:cd:c9:00:00:00'
+              masquerade: {}
+              name: default
+          networkInterfaceMultiqueue: true
+          rng: {}
+        features:
+          acpi: {}
+          smm:
+            enabled: true
+        firmware:
+          bootloader:
+            efi: {}
+        machine:
+          type: pc-q35-rhel8.4.0
+        resources:
+          requests:
+            memory: 2Gi
+      evictionStrategy: LiveMigrate
+      networks:
+        - name: default
+          pod: {}
+      terminationGracePeriodSeconds: 180
+      volumes:
+        - dataVolume:
+            name: postgresql
+          name: rootdisk
+        - cloudInitNoCloud:
+            secretRef:
+              name: postgresql-cloudinit
+          name: cloudinitdisk
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+spec:
+  ports:
+  - name: ssh
+    port: 22
+    protocol: TCP
+    targetPort: 22
+  - name: psql
+    port: 5432
+    protocol: TCP
+    targetPort: 5432
+  selector:
+    kubevirt.io/domain: postgresql
+  type: ClusterIP

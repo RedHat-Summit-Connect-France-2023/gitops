@@ -3,3 +3,4 @@ resources:
 - cluster-operators/application.yaml
 - kepler/application.yaml
 - kubevirt/application.yaml
+- legacy-app/application.yaml
