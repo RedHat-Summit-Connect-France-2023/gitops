@@ -1,0 +1,4 @@
+resources:
+  - database.yaml
+  - eap.yaml
+namespace: thegoodcorner-legacy

@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: legacy-app
+  namespace: openshift-gitops
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/RedHat-Summit-Connect-France-2023/gitops.git
+    targetRevision: main
+    path: gitops/legacy-app/base
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: thegoodcorner-legacy
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
+    automated:
+      selfHeal: true
+      prune: true
+    managedNamespaceMetadata:
+      labels:
+        argocd.argoproj.io/managed-by: openshift-gitops
