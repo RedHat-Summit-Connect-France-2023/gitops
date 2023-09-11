@@ -29,9 +29,36 @@ metadata:
     "helm.sh/hook-weight": "-2"
 rules:
   - apiGroups:
+      - route.openshift.io
+    resources:
+      - routes
+    verbs:
+      - get
+      - list
+
+  - apiGroups:
+    - ''
+    resources:
+      - pods
+      - pods/log
+    verbs:
+      - get
+      - list
+      - watch
+
+  - apiGroups:
+      - 'org.eclipse.che'
+    resources:
+      - checlusters
+    verbs:
+      - get
+      - list
+
+  - apiGroups:
       - '*'
     resources:
       - pods
+      - pods/log
       - configmaps
       - services
       - deployments
@@ -46,6 +73,7 @@ rules:
       - get
       - list
       - watch
+
   - apiGroups:
       - batch
     resources:
@@ -55,6 +83,7 @@ rules:
       - get
       - list
       - watch
+
   - apiGroups:
       - metrics.k8s.io
     resources:
@@ -62,9 +91,11 @@ rules:
     verbs:
       - get
       - list
+
   - apiGroups:
       - tekton.dev
     resources:
+      - pipelines
       - pipelineruns
       - taskruns
     verbs:
