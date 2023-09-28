@@ -102,6 +102,8 @@ catalog:
       type: url
   providers:
     ocm:
+      default:
+        name: local-cluster
       operate-first:
         kubernetesPluginRef: local-cluster
         name: local
