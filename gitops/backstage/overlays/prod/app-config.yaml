@@ -110,7 +110,7 @@ enabled:
   githubOrg: false
   keycloak: false
   kubernetes: true
-  ocm: true
+  ocm: false
   techdocs: true
 
 integrations:
