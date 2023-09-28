@@ -22,7 +22,8 @@ spec:
         runAsUser: 1000
       containers:
         - name: backstage
-          image: quay.io/rhdh/developer-hub-rhel9:latest
+          #image: quay.io/rhdh/developer-hub-rhel9:latest
+          image: quay.io/rhdh/rhdh-hub-rhel9:0.2
           env:
             - name: GH_TOKEN
               valueFrom:
