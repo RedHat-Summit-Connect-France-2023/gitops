@@ -89,8 +89,6 @@ catalog:
 
   providers:
     ocm:
-      default:
-        name: local-cluster
       operate-first:
         kubernetesPluginRef: local-cluster
         name: local
@@ -110,7 +108,7 @@ enabled:
   githubOrg: false
   keycloak: false
   kubernetes: true
-  ocm: false
+  ocm: true
   techdocs: true
 
 integrations:
